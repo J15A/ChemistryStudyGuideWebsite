@@ -1,8 +1,11 @@
 // app/studyguide/page.tsx
+import { Atom, Hexagon, Minimize2, TestTubes, FlameKindling, Waypoints, FlaskConical, Biohazard, Pipette, Scale, Grid2x2Check, ArrowRightLeft } from "lucide-react";
+
 export default function ChemistryStudyGuide() {
   const topics = [
     {
       title: "Stoichiometric Relationships",
+      icon: <FlaskConical className="w-5 h-5 text-blue-500"/>,
       points: [
         "The mole concept and Avogadro’s constant",
         "Empirical and molecular formulas",
@@ -11,6 +14,7 @@ export default function ChemistryStudyGuide() {
     },
     {
       title: "Atomic Structure",
+      icon: <Atom className="w-5 h-5 text-blue-500"/>,
       points: [
         "Protons, neutrons and electrons",
         "Isotopes",
@@ -20,6 +24,7 @@ export default function ChemistryStudyGuide() {
     },
     {
       title: "Periodicity",
+      icon: <Grid2x2Check className="w-5 h-5 text-blue-500"/>,
       points: [
         "Trends in the periodic table",
         "Ionization energy",
@@ -28,6 +33,7 @@ export default function ChemistryStudyGuide() {
     },
     {
       title: "Chemical Bonding and Structure",
+      icon: <Waypoints className="w-5 h-5 text-blue-500"/>,
       points: [
         "Ionic and covalent bonding",
         "Lewis structures",
@@ -37,7 +43,8 @@ export default function ChemistryStudyGuide() {
       ],
     },
     {
-      title: "Energetics/Thermochemistry",
+      title: "Thermochemistry",
+      icon: <FlameKindling className="w-5 h-5 text-blue-500"/>,
       points: [
         "Enthalpy changes",
         "Hess’s Law",
@@ -47,6 +54,7 @@ export default function ChemistryStudyGuide() {
     },
     {
       title: "Chemical Kinetics",
+      icon: <Minimize2 className="w-5 h-5 text-blue-500"/>,
       points: [
         "Rate of reaction",
         "Collision theory",
@@ -56,6 +64,7 @@ export default function ChemistryStudyGuide() {
     },
     {
       title: "Equilibrium",
+      icon: <ArrowRightLeft className="w-5 h-5 text-blue-500"/>,
       points: [
         "The equilibrium constant (Kc)",
         "Le Chatelier’s Principle",
@@ -65,6 +74,7 @@ export default function ChemistryStudyGuide() {
     },
     {
       title: "Acids and Bases",
+      icon: <Pipette className="w-5 h-5 text-blue-500"/>,
       points: [
         "Brønsted–Lowry theory",
         "pH and pOH",
@@ -75,6 +85,7 @@ export default function ChemistryStudyGuide() {
     },
     {
       title: "Redox Processes",
+      icon: <TestTubes className="w-5 h-5 text-blue-500"/>,
       points: [
         "Oxidation and reduction",
         "Electrochemical cells",
@@ -84,6 +95,7 @@ export default function ChemistryStudyGuide() {
     },
     {
       title: "Organic Chemistry",
+      icon: <Hexagon className="w-5 h-5 text-blue-500"/>,
       points: [
         "Functional groups",
         "Nomenclature",
@@ -94,6 +106,7 @@ export default function ChemistryStudyGuide() {
     },
     {
       title: "Measurement and Data Processing",
+      icon: <Scale className="w-5 h-5 text-blue-500"/>,
       points: [
         "Uncertainties and errors",
         "Significant figures",
@@ -103,18 +116,29 @@ export default function ChemistryStudyGuide() {
   ];
 
   return (
-    <main className="p-6">
-      <h1 className="text-3xl font-bold mb-6">IB Chemistry Study Guide (Year 1 & 2)</h1>
-      {topics.map((topic, index) => (
-        <div key={index} className="mb-5">
-          <h2 className="text-xl font-semibold text-blue-700">{topic.title}</h2>
-          <ul className="list-disc list-inside ml-4 text-gray-700">
-            {topic.points.map((point, i) => (
-              <li key={i}>{point}</li>
-            ))}
-          </ul>
-        </div>
-      ))}
+    <main className="p-6 bg-gray-50 min-h-screen">
+      <h1 className="text-4xl font-bold text-center text-blue-800 mb-10">
+        IB Chemistry Study Guide
+      </h1>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {topics.map((topic, index) => (
+          <div
+            key={index}
+            className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition duration-300"
+          >
+            <h2 className="text-xl font-semibold text-indigo-700 flex items-center gap-2">
+              {topic.icon}
+              {topic.title}
+            </h2>
+            <ul className="list-disc list-inside text-gray-700">
+              {topic.points.map((point, i) => (
+                <li key={i} className="mb-1">{point}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
     </main>
   );
 }
