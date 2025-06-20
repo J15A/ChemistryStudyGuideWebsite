@@ -1,114 +1,103 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
-import { ChevronDown, ChevronRight, Circle, Bookmark } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { BookOpen, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Topic } from "@shared/schema";
+import { topics } from "@/lib/topics";
+import { LocalStorageManager } from "@/lib/localStorage";
 
 export function Sidebar() {
   const [location] = useLocation();
-  const [expandedTopics, setExpandedTopics] = useState<Set<number>>(new Set([1]));
+  const [topicProgress, setTopicProgress] = useState<Record<number, number>>(
+    {}
+  );
 
-  const { data: topics = [] } = useQuery<Topic[]>({
-    queryKey: ["/api/topics"],
-  });
+  useEffect(() => {
+    // Get progress from local storage
+    const progress = LocalStorageManager.getProgress();
+    const progressMap: Record<number, number> = {};
 
-  const { data: bookmarks = [] } = useQuery({
-    queryKey: ["/api/bookmarks"],
-  });
+    progress.forEach((p) => {
+      progressMap[p.topicId] = p.progress;
+    });
 
-  const toggleTopic = (topicId: number) => {
-    const newExpanded = new Set(expandedTopics);
-    if (newExpanded.has(topicId)) {
-      newExpanded.delete(topicId);
-    } else {
-      newExpanded.add(topicId);
-    }
-    setExpandedTopics(newExpanded);
-  };
-
-  const getProgressColor = (progress: number) => {
-    if (progress >= 80) return "text-ib-success";
-    if (progress >= 50) return "text-ib-warning";
-    return "text-gray-300";
-  };
+    setTopicProgress(progressMap);
+  }, []);
 
   return (
-    <aside className="hidden lg:block w-80 bg-white shadow-lg">
+    <aside className="hidden lg:block w-80 bg-white shadow-lg fixed left-0 top-16 h-[calc(100vh-4rem)] overflow-y-auto">
       <div className="p-6">
-        <h2 className="text-lg font-semibold text-ib-neutral-800 mb-4">IB Chemistry Topics</h2>
-        
+        <h2 className="text-lg font-semibold text-ib-neutral-800 mb-4">
+          IB Chemistry Topics
+        </h2>
         {topics.map((topic, index) => {
-          const isExpanded = expandedTopics.has(topic.id);
           const isActive = location.includes(topic.slug);
-          // Mock progress data for demonstration
-          const mockProgress = [85, 60, 0, 0][index] || 0;
-          
+          const progress = topicProgress[topic.id] || 0;
+          const isCompleted = progress >= 80;
+
           return (
             <div key={topic.id} className="mb-4">
-              <Button
-                variant="ghost"
-                onClick={() => toggleTopic(topic.id)}
+              <Link href={`/topic/${topic.slug}`}>
+                <div
+                  className={cn(
+                    "w-full flex items-center p-3 text-left font-medium rounded-lg cursor-pointer transition-colors",
+                    isActive
+                      ? "bg-ib-primary text-white"
+                      : isCompleted
+                      ? "bg-green-100 hover:bg-green-200 text-green-800 border border-green-300"
+                      : "bg-ib-neutral-100 hover:bg-ib-neutral-200 text-ib-neutral-700"
+                  )}
+                >
+                  <span>
+                    {topic.order}. {topic.title}
+                  </span>
+                  {isCompleted && (
+                    <span className="ml-auto text-green-600">✓</span>
+                  )}
+                </div>
+              </Link>
+            </div>
+          );
+        })}
+        {/* Quizzes Section */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <h2 className="text-lg font-semibold text-ib-neutral-800 mb-4">
+            Quizzes
+          </h2>
+          <div className="mb-4">
+            <Link href="/quiz">
+              <div
                 className={cn(
-                  "w-full flex items-center justify-between p-3 text-left font-medium rounded-lg",
-                  isActive
+                  "w-full flex items-center p-3 text-left font-medium rounded-lg cursor-pointer transition-colors",
+                  location === "/quiz"
                     ? "bg-ib-primary text-white"
                     : "bg-ib-neutral-100 hover:bg-ib-neutral-200 text-ib-neutral-700"
                 )}
               >
-                <span>{topic.order}. {topic.title}</span>
-                {isExpanded ? (
-                  <ChevronDown className="w-4 h-4" />
-                ) : (
-                  <ChevronRight className="w-4 h-4" />
-                )}
-              </Button>
-              
-              {isExpanded && (
-                <div className="mt-2 pl-4 space-y-2">
-                  <Link href={`/topic/${topic.slug}`}>
-                    <a className="block py-2 px-3 text-sm text-gray-600 hover:text-ib-primary hover:bg-blue-50 rounded">
-                      <Circle className={cn("w-2 h-2 mr-2 inline", getProgressColor(mockProgress))} />
-                      Introduction and Overview
-                    </a>
-                  </Link>
-                  <Link href={`/topic/${topic.slug}/concepts`}>
-                    <a className="block py-2 px-3 text-sm text-gray-600 hover:text-ib-primary hover:bg-blue-50 rounded">
-                      <Circle className={cn("w-2 h-2 mr-2 inline", getProgressColor(mockProgress * 0.8))} />
-                      Key Concepts
-                    </a>
-                  </Link>
-                  <Link href={`/topic/${topic.slug}/quiz`}>
-                    <a className="block py-2 px-3 text-sm text-gray-600 hover:text-ib-primary hover:bg-blue-50 rounded">
-                      <Circle className={cn("w-2 h-2 mr-2 inline", getProgressColor(mockProgress * 0.6))} />
-                      Practice Quiz
-                    </a>
-                  </Link>
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {/* Bookmarks Section */}
+                <BookOpen className="w-4 h-4 mr-2" />
+                <span>All Quizzes</span>
+              </div>
+            </Link>
+          </div>
+        </div>
+        {/* Progress Section */}
         <div className="mt-8 pt-6 border-t border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-600 mb-3 flex items-center">
-            <Bookmark className="w-4 h-4 text-ib-accent mr-2" />
-            Bookmarks
-          </h3>
-          <div className="space-y-2">
-            {bookmarks.length > 0 ? (
-              bookmarks.map((bookmark: any) => (
-                <Link key={bookmark.id} href={`/topic/${bookmark.topicId}`}>
-                  <a className="block py-2 px-3 text-sm text-gray-600 hover:text-ib-primary hover:bg-blue-50 rounded">
-                    Bookmarked Topic
-                  </a>
-                </Link>
-              ))
-            ) : (
-              <div className="text-sm text-gray-500 italic">No bookmarks yet</div>
-            )}
+          <h2 className="text-lg font-semibold text-ib-neutral-800 mb-4">
+            Progress
+          </h2>
+          <div className="mb-4">
+            <Link href="/progress">
+              <div
+                className={cn(
+                  "w-full flex items-center p-3 text-left font-medium rounded-lg cursor-pointer transition-colors",
+                  location === "/progress"
+                    ? "bg-ib-primary text-white"
+                    : "bg-ib-neutral-100 hover:bg-ib-neutral-200 text-ib-neutral-700"
+                )}
+              >
+                <TrendingUp className="w-4 h-4 mr-2" />
+                <span>View Progress</span>
+              </div>
+            </Link>
           </div>
         </div>
       </div>

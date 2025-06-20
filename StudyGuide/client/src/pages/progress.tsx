@@ -1,228 +1,281 @@
-import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, Target, Calendar, Award, Clock, BookOpen } from "lucide-react";
+import { useState, useEffect } from "react";
+import { TrendingUp, Clock, Target, Award } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import type { Topic, UserProgress } from "@shared/schema";
+import { topics } from "@/lib/topics";
+import { LocalStorageManager } from "@/lib/localStorage";
 
 export default function ProgressPage() {
-  const { data: topics = [] } = useQuery<Topic[]>({
-    queryKey: ["/api/topics"],
+  const [progressData, setProgressData] = useState<
+    Array<{
+      topicId: number;
+      title: string;
+      progress: number;
+      timeSpent: string;
+      lastStudied: string;
+      status: string;
+    }>
+  >([]);
+
+  const [overallStats, setOverallStats] = useState({
+    overallProgress: 0,
+    totalTimeSpent: "0m",
+    completedTopics: 0,
+    streak: 0,
   });
 
-  const { data: progress = [] } = useQuery<UserProgress[]>({
-    queryKey: ["/api/progress"],
-  });
+  useEffect(() => {
+    // Get progress from local storage
+    const storedProgress = LocalStorageManager.getProgress();
+    const studyTimes = LocalStorageManager.getStudyTime();
 
-  // Mock detailed progress data
-  const progressData = [
-    { topicId: 1, title: "Stoichiometric relationships", progress: 85, timeSpent: "4h 30m", lastStudied: "Today", status: "completed" },
-    { topicId: 2, title: "Atomic structure", progress: 60, timeSpent: "2h 15m", lastStudied: "Yesterday", status: "in-progress" },
-    { topicId: 3, title: "Periodicity", progress: 25, timeSpent: "1h 10m", lastStudied: "3 days ago", status: "in-progress" },
-    { topicId: 4, title: "Chemical bonding and structure", progress: 10, timeSpent: "30m", lastStudied: "1 week ago", status: "started" },
-    { topicId: 5, title: "Energetics/thermochemistry", progress: 0, timeSpent: "0m", lastStudied: "Never", status: "not-started" },
-    { topicId: 6, title: "Chemical kinetics", progress: 0, timeSpent: "0m", lastStudied: "Never", status: "not-started" }
-  ];
+    // Create progress data for all topics
+    const progressForTopics = topics.map((topic) => {
+      const stored = storedProgress.find((p) => p.topicId === topic.id);
+      const studyTime = studyTimes.find((st) => st.topicId === topic.id);
 
-  const overallProgress = Math.round(
-    progressData.reduce((sum, item) => sum + item.progress, 0) / progressData.length
-  );
+      const progress = stored ? stored.progress : 0;
+      const timeSpent = studyTime
+        ? LocalStorageManager.formatTime(studyTime.timeSpent)
+        : "0m";
+      const lastStudied = stored
+        ? LocalStorageManager.getTimeAgo(stored.lastStudied)
+        : "Never";
+      const status = stored ? stored.status : "not-started";
 
-  const totalTimeSpent = "8h 25m";
-  const completedTopics = progressData.filter(item => item.progress >= 80).length;
-  const streak = 5; // days
+      return {
+        topicId: topic.id,
+        title: topic.title,
+        progress,
+        timeSpent,
+        lastStudied,
+        status,
+      };
+    });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'in-progress': return 'bg-blue-100 text-blue-800';
-      case 'started': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+    setProgressData(progressForTopics);
+
+    // Calculate overall stats
+    const totalProgress = progressForTopics.reduce(
+      (sum, item) => sum + item.progress,
+      0
+    );
+    const overallProgress = Math.round(
+      totalProgress / progressForTopics.length
+    );
+    const completedTopics = progressForTopics.filter(
+      (item) => item.progress >= 80
+    ).length;
+
+    const totalTimeMinutes = studyTimes.reduce(
+      (sum, st) => sum + st.timeSpent,
+      0
+    );
+    const totalTimeSpent = LocalStorageManager.formatTime(totalTimeMinutes);
+
+    // Calculate streak (simplified - could be enhanced)
+    const streak = Math.min(completedTopics, 7); // Mock streak calculation
+
+    setOverallStats({
+      overallProgress,
+      totalTimeSpent,
+      completedTopics,
+      streak,
+    });
+  }, []);
+
+  // Function to refresh progress data
+  const refreshProgressData = () => {
+    const storedProgress = LocalStorageManager.getProgress();
+    const studyTimes = LocalStorageManager.getStudyTime();
+
+    const progressForTopics = topics.map((topic) => {
+      const stored = storedProgress.find((p) => p.topicId === topic.id);
+      const studyTime = studyTimes.find((st) => st.topicId === topic.id);
+
+      const progress = stored ? stored.progress : 0;
+      const timeSpent = studyTime
+        ? LocalStorageManager.formatTime(studyTime.timeSpent)
+        : "0m";
+      const lastStudied = stored
+        ? LocalStorageManager.getTimeAgo(stored.lastStudied)
+        : "Never";
+      const status = stored ? stored.status : "not-started";
+
+      return {
+        topicId: topic.id,
+        title: topic.title,
+        progress,
+        timeSpent,
+        lastStudied,
+        status,
+      };
+    });
+
+    setProgressData(progressForTopics);
+
+    const totalProgress = progressForTopics.reduce(
+      (sum, item) => sum + item.progress,
+      0
+    );
+    const overallProgress = Math.round(
+      totalProgress / progressForTopics.length
+    );
+    const completedTopics = progressForTopics.filter(
+      (item) => item.progress >= 80
+    ).length;
+
+    const totalTimeMinutes = studyTimes.reduce(
+      (sum, st) => sum + st.timeSpent,
+      0
+    );
+    const totalTimeSpent = LocalStorageManager.formatTime(totalTimeMinutes);
+
+    const streak = Math.min(completedTopics, 7);
+
+    setOverallStats({
+      overallProgress,
+      totalTimeSpent,
+      completedTopics,
+      streak,
+    });
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'completed': return 'Completed';
-      case 'in-progress': return 'In Progress';
-      case 'started': return 'Started';
-      default: return 'Not Started';
-    }
-  };
+  // Listen for storage changes to refresh data
+  useEffect(() => {
+    const handleStorageChange = () => {
+      refreshProgressData();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("quizCompleted", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("quizCompleted", handleStorageChange);
+    };
+  }, []);
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-ib-neutral-800 mb-2">Study Progress</h1>
-        <p className="text-gray-600">Track your learning journey through IB Chemistry</p>
+        <h1 className="text-3xl font-bold text-ib-neutral-800 mb-2">
+          Progress Overview
+        </h1>
+        <p className="text-gray-600">
+          Track your learning journey through IB Chemistry
+        </p>
       </div>
 
-      {/* Progress Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-r from-blue-50 to-blue-100">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-ib-primary rounded-lg flex items-center justify-center">
-                <TrendingUp className="text-white w-5 h-5" />
-              </div>
+      {/* Overall Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="bg-white shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Overall Progress</p>
-                <p className="text-xl font-bold text-ib-neutral-800">{overallProgress}%</p>
+                <p className="text-2xl font-bold text-ib-neutral-800">
+                  {overallStats.overallProgress}%
+                </p>
               </div>
+              <TrendingUp className="w-8 h-8 text-ib-primary" />
+            </div>
+            <Progress
+              value={overallStats.overallProgress}
+              className="w-full h-2 mt-4"
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Time Spent</p>
+                <p className="text-2xl font-bold text-ib-neutral-800">
+                  {overallStats.totalTimeSpent}
+                </p>
+              </div>
+              <Clock className="w-8 h-8 text-ib-accent" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-green-50 to-green-100">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-ib-secondary rounded-lg flex items-center justify-center">
-                <Award className="text-white w-5 h-5" />
-              </div>
+        <Card className="bg-white shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Completed Topics</p>
-                <p className="text-xl font-bold text-ib-neutral-800">{completedTopics}/{progressData.length}</p>
+                <p className="text-2xl font-bold text-ib-neutral-800">
+                  {overallStats.completedTopics}/{progressData.length}
+                </p>
               </div>
+              <Target className="w-8 h-8 text-ib-secondary" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-purple-50 to-purple-100">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                <Clock className="text-white w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Time Spent</p>
-                <p className="text-xl font-bold text-ib-neutral-800">{totalTimeSpent}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-r from-orange-50 to-orange-100">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-ib-accent rounded-lg flex items-center justify-center">
-                <Calendar className="text-white w-5 h-5" />
-              </div>
+        <Card className="bg-white shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Study Streak</p>
-                <p className="text-xl font-bold text-ib-neutral-800">{streak} days</p>
+                <p className="text-2xl font-bold text-ib-neutral-800">
+                  {overallStats.streak} days
+                </p>
               </div>
+              <Award className="w-8 h-8 text-ib-warning" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Overall Progress Bar */}
+      {/* Detailed Progress */}
       <Card className="bg-white shadow-lg">
         <CardHeader>
-          <CardTitle className="text-xl text-ib-neutral-800 flex items-center">
-            <Target className="w-5 h-5 mr-2 text-ib-primary" />
-            Overall Progress
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">IB Chemistry Curriculum</span>
-              <span className="text-ib-primary font-semibold">{overallProgress}%</span>
-            </div>
-            <Progress value={overallProgress} className="w-full h-4" />
-            <div className="grid grid-cols-3 gap-4 text-center text-sm">
-              <div>
-                <p className="text-gray-500">Remaining</p>
-                <p className="font-semibold text-ib-neutral-800">{100 - overallProgress}%</p>
-              </div>
-              <div>
-                <p className="text-gray-500">Est. Completion</p>
-                <p className="font-semibold text-ib-neutral-800">3 weeks</p>
-              </div>
-              <div>
-                <p className="text-gray-500">Next Milestone</p>
-                <p className="font-semibold text-ib-neutral-800">50%</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Detailed Topic Progress */}
-      <Card className="bg-white shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-xl text-ib-neutral-800 flex items-center">
-            <BookOpen className="w-5 h-5 mr-2 text-ib-primary" />
+          <CardTitle className="text-xl text-ib-neutral-800">
             Topic Progress
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
             {progressData.map((item, index) => (
-              <div key={item.topicId} className="border-b border-gray-100 pb-4 last:border-b-0">
+              <div
+                key={item.topicId}
+                className="border-b border-gray-100 pb-4 last:border-b-0"
+              >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-ib-primary rounded-lg flex items-center justify-center text-white text-sm font-medium">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-ib-neutral-800">{item.title}</h3>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <span className="flex items-center">
-                          <Clock className="w-3 h-3 mr-1" />
-                          {item.timeSpent}
-                        </span>
-                        <span className="flex items-center">
-                          <Calendar className="w-3 h-3 mr-1" />
-                          {item.lastStudied}
-                        </span>
-                      </div>
+                  <div>
+                    <h3 className="font-semibold text-ib-neutral-800">
+                      Topic {item.topicId}: {item.title}
+                    </h3>
+                    <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
+                      <span>Time spent: {item.timeSpent}</span>
+                      <span>Last studied: {item.lastStudied}</span>
+                      <span
+                        className={`px-2 py-1 rounded text-xs ${
+                          item.status === "completed"
+                            ? "bg-green-100 text-green-800"
+                            : item.status === "in-progress"
+                            ? "bg-blue-100 text-blue-800"
+                            : item.status === "started"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {item.status.replace("-", " ")}
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <Badge className={getStatusColor(item.status)}>
-                      {getStatusText(item.status)}
-                    </Badge>
-                    <span className={`font-medium text-sm ${
-                      item.progress >= 80 ? 'text-ib-secondary' :
-                      item.progress >= 50 ? 'text-ib-warning' :
-                      item.progress > 0 ? 'text-ib-primary' :
-                      'text-gray-400'
-                    }`}>
+                  <div className="text-right">
+                    <p className="text-lg font-semibold text-ib-neutral-800">
                       {item.progress}%
-                    </span>
+                    </p>
                   </div>
                 </div>
-                <Progress value={item.progress} className="w-full h-2" />
+                <Progress value={item.progress} className="w-full h-3" />
               </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Study Recommendations */}
-      <Card className="bg-gradient-to-r from-ib-primary to-ib-primary-dark text-white">
-        <CardHeader>
-          <CardTitle className="text-xl flex items-center">
-            <Target className="w-5 h-5 mr-2" />
-            Study Recommendations
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-start space-x-3">
-              <div className="w-2 h-2 bg-white rounded-full mt-2 flex-shrink-0"></div>
-              <p className="text-sm">Focus on completing "Atomic structure" - you're 60% done!</p>
-            </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-2 h-2 bg-white rounded-full mt-2 flex-shrink-0"></div>
-              <p className="text-sm">Practice more quizzes to reinforce your understanding of stoichiometry</p>
-            </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-2 h-2 bg-white rounded-full mt-2 flex-shrink-0"></div>
-              <p className="text-sm">Start "Energetics/thermochemistry" to maintain your study momentum</p>
-            </div>
           </div>
         </CardContent>
       </Card>

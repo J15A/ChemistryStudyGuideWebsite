@@ -29,7 +29,7 @@ function Router() {
 
 function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   // Mock progress for header
   const mockProgress = 48;
 
@@ -41,14 +41,14 @@ function App() {
             onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             progress={mockProgress}
           />
-          
+
           <div className="flex">
             <Sidebar />
-            <main className="flex-1 p-6 lg:p-8 pb-20 lg:pb-8">
+            <main className="flex-1 p-6 lg:p-8 pb-20 lg:pb-8 lg:ml-80">
               <Router />
             </main>
           </div>
-          
+
           <MobileNav />
         </div>
         <Toaster />
