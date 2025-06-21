@@ -5,6 +5,7 @@ const STORAGE_KEYS = {
   RECENT_ACTIVITY: "chemistry-recent-activity",
   STUDY_TIME: "chemistry-study-time",
   LAST_VISITED: "chemistry-last-visited",
+  STREAK_DATES: "chemistry-streak-dates",
 } as const;
 
 // Types for local storage data
@@ -65,7 +66,7 @@ export class LocalStorageManager {
 
     const now = new Date().toISOString();
     const status =
-      progress >= 80
+      progress === 100
         ? "completed"
         : progress >= 50
         ? "in-progress"
@@ -223,6 +224,53 @@ export class LocalStorageManager {
     }
 
     localStorage.setItem(STORAGE_KEYS.STUDY_TIME, JSON.stringify(studyTimes));
+  }
+
+  // Streak management
+  static addTodayToStreakDates(): void {
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    let streakDates: string[] = [];
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.STREAK_DATES);
+      streakDates = stored ? JSON.parse(stored) : [];
+    } catch {
+      streakDates = [];
+    }
+    if (!streakDates.includes(today)) {
+      streakDates.push(today);
+      localStorage.setItem(
+        STORAGE_KEYS.STREAK_DATES,
+        JSON.stringify(streakDates)
+      );
+    }
+  }
+
+  static getStreakDates(): string[] {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.STREAK_DATES);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  static calculateStreak(): number {
+    const streakDates = this.getStreakDates().sort();
+    if (streakDates.length === 0) return 0;
+    let streak = 0;
+    let current = new Date();
+    current.setHours(0, 0, 0, 0);
+    for (let i = streakDates.length - 1; i >= 0; i--) {
+      const date = new Date(streakDates[i]);
+      date.setHours(0, 0, 0, 0);
+      if (date.getTime() === current.getTime()) {
+        streak++;
+        current.setDate(current.getDate() - 1);
+      } else if (date.getTime() < current.getTime()) {
+        break;
+      }
+    }
+    return streak;
   }
 
   // Utility functions

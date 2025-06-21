@@ -9,6 +9,7 @@ import {
   Globe,
   Book,
   Calculator,
+  Play,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PeriodicTableWidget } from "@/components/periodic-table-widget";
@@ -145,6 +146,31 @@ export default function Home() {
     },
     {
       id: 3,
+      title: "The Organic Chemistry Tutor",
+      description:
+        "Comprehensive chemistry tutorials and problem-solving videos",
+      url: "https://www.youtube.com/c/TheOrganicChemistryTutor",
+      icon: Play,
+      category: "Learning",
+    },
+    {
+      id: 4,
+      title: "Bozeman Science",
+      description: "AP and IB Chemistry video lessons by Paul Andersen",
+      url: "https://www.youtube.com/c/bozemanbiology",
+      icon: Play,
+      category: "Learning",
+    },
+    {
+      id: 5,
+      title: "MolView",
+      description: "3D molecular visualization and chemical structure viewer",
+      url: "https://molview.org/",
+      icon: Calculator,
+      category: "Reference",
+    },
+    {
+      id: 6,
       title: "ChemSpider",
       description: "Chemical structure database and search engine",
       url: "http://www.chemspider.com/",
@@ -152,7 +178,7 @@ export default function Home() {
       category: "Reference",
     },
     {
-      id: 4,
+      id: 7,
       title: "PubChem",
       description: "Chemical information database from NIH",
       url: "https://pubchem.ncbi.nlm.nih.gov/",
@@ -160,7 +186,7 @@ export default function Home() {
       category: "Reference",
     },
     {
-      id: 5,
+      id: 8,
       title: "RSC Periodic Table",
       description: "Interactive periodic table from Royal Society of Chemistry",
       url: "https://www.rsc.org/periodic-table",

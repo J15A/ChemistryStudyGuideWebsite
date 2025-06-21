@@ -21,7 +21,6 @@ export default function QuizPage() {
     totalAttempts: 0,
     averageScore: 0,
     bestScore: 0,
-    timeSpent: "0m",
   });
 
   // Create static quizzes from quizQuestions
@@ -47,7 +46,7 @@ export default function QuizPage() {
   };
 
   useEffect(() => {
-    // Get quiz statistics from local storage
+    // Get quiz statistics from local storage - all quizzes combined
     const quizAttempts = LocalStorageManager.getQuizAttempts();
 
     if (quizAttempts.length > 0) {
@@ -60,17 +59,11 @@ export default function QuizPage() {
       const bestScore = Math.max(
         ...quizAttempts.map((attempt) => attempt.score)
       );
-      const totalTimeSeconds = quizAttempts.reduce(
-        (sum, attempt) => sum + attempt.timeSpent,
-        0
-      );
-      const timeSpent = LocalStorageManager.formatTimeSpent(totalTimeSeconds);
 
       setQuizStats({
         totalAttempts,
         averageScore,
         bestScore,
-        timeSpent,
       });
     }
   }, []); // Empty dependency array means this runs once on mount
@@ -89,17 +82,11 @@ export default function QuizPage() {
       const bestScore = Math.max(
         ...quizAttempts.map((attempt) => attempt.score)
       );
-      const totalTimeSeconds = quizAttempts.reduce(
-        (sum, attempt) => sum + attempt.timeSpent,
-        0
-      );
-      const timeSpent = LocalStorageManager.formatTimeSpent(totalTimeSeconds);
 
       setQuizStats({
         totalAttempts,
         averageScore,
         bestScore,
-        timeSpent,
       });
     }
   };
@@ -147,7 +134,7 @@ export default function QuizPage() {
       </div>
 
       {/* Quiz Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-gradient-to-r from-blue-50 to-blue-100">
           <CardContent className="p-4">
             <div className="flex items-center space-x-3">
@@ -190,22 +177,6 @@ export default function QuizPage() {
                 <p className="text-sm text-gray-600">Best Score</p>
                 <p className="text-xl font-bold text-ib-neutral-800">
                   {quizStats.bestScore}%
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-r from-purple-50 to-purple-100">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                <Clock className="text-white w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Time Spent</p>
-                <p className="text-xl font-bold text-ib-neutral-800">
-                  {quizStats.timeSpent}
                 </p>
               </div>
             </div>

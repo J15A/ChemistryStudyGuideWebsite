@@ -28,6 +28,7 @@ export default function ProgressPage() {
     // Get progress from local storage
     const storedProgress = LocalStorageManager.getProgress();
     const studyTimes = LocalStorageManager.getStudyTime();
+    const quizAttempts = LocalStorageManager.getQuizAttempts();
 
     // Create progress data for all topics
     const progressForTopics = topics.map((topic) => {
@@ -64,17 +65,24 @@ export default function ProgressPage() {
       totalProgress / progressForTopics.length
     );
     const completedTopics = progressForTopics.filter(
-      (item) => item.progress >= 80
-    ).length;
+      (item) => item.progress === 100
+    ).length; // Only 100% counts as completed
 
-    const totalTimeMinutes = studyTimes.reduce(
+    // Calculate total time spent on site (study time + quiz time)
+    const totalStudyTimeMinutes = studyTimes.reduce(
       (sum, st) => sum + st.timeSpent,
       0
     );
-    const totalTimeSpent = LocalStorageManager.formatTime(totalTimeMinutes);
+    const totalQuizTimeSeconds = quizAttempts.reduce(
+      (sum, attempt) => sum + attempt.timeSpent,
+      0
+    );
+    const totalQuizTimeMinutes = Math.round(totalQuizTimeSeconds / 60);
+    const totalSiteTimeMinutes = totalStudyTimeMinutes + totalQuizTimeMinutes;
+    const totalTimeSpent = LocalStorageManager.formatTime(totalSiteTimeMinutes);
 
-    // Calculate streak (simplified - could be enhanced)
-    const streak = Math.min(completedTopics, 7); // Mock streak calculation
+    // Calculate streak (real consecutive days)
+    const streak = LocalStorageManager.calculateStreak();
 
     setOverallStats({
       overallProgress,
@@ -82,12 +90,13 @@ export default function ProgressPage() {
       completedTopics,
       streak,
     });
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount
 
   // Function to refresh progress data
   const refreshProgressData = () => {
     const storedProgress = LocalStorageManager.getProgress();
     const studyTimes = LocalStorageManager.getStudyTime();
+    const quizAttempts = LocalStorageManager.getQuizAttempts();
 
     const progressForTopics = topics.map((topic) => {
       const stored = storedProgress.find((p) => p.topicId === topic.id);
@@ -122,16 +131,24 @@ export default function ProgressPage() {
       totalProgress / progressForTopics.length
     );
     const completedTopics = progressForTopics.filter(
-      (item) => item.progress >= 80
-    ).length;
+      (item) => item.progress === 100
+    ).length; // Only 100% counts as completed
 
-    const totalTimeMinutes = studyTimes.reduce(
+    // Calculate total time spent on site (study time + quiz time)
+    const totalStudyTimeMinutes = studyTimes.reduce(
       (sum, st) => sum + st.timeSpent,
       0
     );
-    const totalTimeSpent = LocalStorageManager.formatTime(totalTimeMinutes);
+    const totalQuizTimeSeconds = quizAttempts.reduce(
+      (sum, attempt) => sum + attempt.timeSpent,
+      0
+    );
+    const totalQuizTimeMinutes = Math.round(totalQuizTimeSeconds / 60);
+    const totalSiteTimeMinutes = totalStudyTimeMinutes + totalQuizTimeMinutes;
+    const totalTimeSpent = LocalStorageManager.formatTime(totalSiteTimeMinutes);
 
-    const streak = Math.min(completedTopics, 7);
+    // Calculate streak (real consecutive days)
+    const streak = LocalStorageManager.calculateStreak();
 
     setOverallStats({
       overallProgress,
@@ -250,7 +267,6 @@ export default function ProgressPage() {
                       Topic {item.topicId}: {item.title}
                     </h3>
                     <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
-                      <span>Time spent: {item.timeSpent}</span>
                       <span>Last studied: {item.lastStudied}</span>
                       <span
                         className={`px-2 py-1 rounded text-xs ${

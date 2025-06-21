@@ -6,7 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuizCard } from "@/components/quiz-card";
 import { MolecularViewer } from "@/components/molecular-viewer";
+import { topicQuizQuestions } from "@/lib/topic-quiz-data";
 import type { Topic, Quiz } from "@shared/schema";
+
+// Define local Quiz interface for topic quizzes
+interface LocalQuiz {
+  id: string;
+  title: string;
+  difficulty: "easy" | "medium" | "hard";
+  questions: any[];
+}
 
 // Topic-specific formula data
 const topicFormulas: Record<string, any[]> = {
@@ -43,34 +52,7 @@ const topicFormulas: Record<string, any[]> = {
       description: "Density of gases under different conditions",
     },
   ],
-  "atomic-structure": [
-    {
-      name: "Energy of Photon",
-      formula: "E = hf = hc/λ",
-      description:
-        "E = energy, h = Planck's constant, f = frequency, λ = wavelength",
-    },
-    {
-      name: "Rydberg Equation",
-      formula: "1/λ = R(1/n₁² - 1/n₂²)",
-      description: "For hydrogen spectrum calculations",
-    },
-    {
-      name: "de Broglie Wavelength",
-      formula: "λ = h/mv",
-      description: "Wave-particle duality for matter",
-    },
-    {
-      name: "Heisenberg Uncertainty",
-      formula: "Δx·Δp ≥ h/4π",
-      description: "Fundamental limit on precision",
-    },
-    {
-      name: "Energy Levels",
-      formula: "En = -13.6/n² eV",
-      description: "Hydrogen atom energy levels",
-    },
-  ],
+  "atomic-structure": [],
   periodicity: [
     {
       name: "Ionization Energy",
@@ -82,52 +64,12 @@ const topicFormulas: Record<string, any[]> = {
       formula: "X(g) + e⁻ → X⁻(g)",
       description: "Energy change when electron is added",
     },
-    {
-      name: "Effective Nuclear Charge",
-      formula: "Zeff = Z - S",
-      description: "Net positive charge felt by valence electrons",
-    },
-    {
-      name: "Atomic Radius Trend",
-      formula: "r ∝ n²/Zeff",
-      description: "Relationship between size and nuclear charge",
-    },
-    {
-      name: "Coulomb's Law",
-      formula: "F = kq₁q₂/r²",
-      description: "Force between charged particles",
-    },
   ],
   "chemical-bonding": [
-    {
-      name: "Lattice Energy",
-      formula: "U ∝ (q₁q₂)/r",
-      description: "Energy to separate ionic solid into gaseous ions",
-    },
     {
       name: "Bond Energy",
       formula: "ΔH = Σ bonds broken - Σ bonds formed",
       description: "Energy change in bond formation/breaking",
-    },
-    {
-      name: "Formal Charge",
-      formula: "FC = V - N - B/2",
-      description: "V=valence, N=nonbonding, B=bonding electrons",
-    },
-    {
-      name: "Bond Order",
-      formula: "BO = (bonding - antibonding)/2",
-      description: "From molecular orbital theory",
-    },
-    {
-      name: "Dipole Moment",
-      formula: "μ = q × r",
-      description: "Measure of polarity in molecules",
-    },
-    {
-      name: "VSEPR Formula",
-      formula: "AXnEm",
-      description: "A=central atom, X=bonding, E=lone pairs",
     },
   ],
   "energetics-thermochemistry": [
@@ -238,10 +180,22 @@ export default function TopicPage() {
     enabled: !!slug,
   });
 
-  const { data: quizzes = [] } = useQuery<Quiz[]>({
-    queryKey: [`/api/topics/${topic?.id}/quizzes`],
-    enabled: !!topic?.id,
-  });
+  // Create topic-specific quiz
+  const getTopicQuiz = (): LocalQuiz | null => {
+    if (!slug) return null;
+
+    const topicQuestions = topicQuizQuestions[slug];
+    if (!topicQuestions) return null;
+
+    return {
+      id: slug,
+      title: `${topic?.title || "Topic"} Quiz`,
+      difficulty: "medium",
+      questions: topicQuestions,
+    };
+  };
+
+  const topicQuiz = getTopicQuiz();
 
   if (isLoading) {
     return (
@@ -340,6 +294,16 @@ export default function TopicPage() {
                             </p>
                           </div>
                         )}
+                        {concept.energyOrder && (
+                          <div className="bg-orange-50 p-4 rounded-lg">
+                            <p className="text-sm font-medium text-ib-neutral-700 mb-1">
+                              Energy Order:
+                            </p>
+                            <p className="text-sm font-mono text-ib-accent">
+                              {concept.energyOrder}
+                            </p>
+                          </div>
+                        )}
                         {concept.examples && (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
                             {concept.examples.map(
@@ -433,12 +397,12 @@ export default function TopicPage() {
           </Card>
 
           {/* Quiz Section */}
-          {quizzes.length > 0 && (
+          {topicQuiz && (
             <div>
               <h2 className="text-2xl font-bold text-ib-neutral-800 mb-4">
                 Practice Quiz
               </h2>
-              <QuizCard quiz={quizzes[0]} />
+              <QuizCard quiz={topicQuiz} />
             </div>
           )}
         </div>

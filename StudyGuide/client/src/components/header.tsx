@@ -1,14 +1,13 @@
-import { Menu, Atom } from "lucide-react";
+import { Atom } from "lucide-react";
 import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
 interface HeaderProps {
-  onMobileMenuToggle: () => void;
   progress: number;
+  onMobileMenuToggle?: () => void;
 }
 
-export function Header({ onMobileMenuToggle, progress }: HeaderProps) {
+export function Header({ progress }: HeaderProps) {
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -26,7 +25,7 @@ export function Header({ onMobileMenuToggle, progress }: HeaderProps) {
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2 bg-ib-neutral-100 px-3 py-2 rounded-lg">
               <span className="text-sm text-ib-neutral-700">Progress:</span>
               <Progress value={progress} className="w-16 h-2" />
@@ -35,15 +34,6 @@ export function Header({ onMobileMenuToggle, progress }: HeaderProps) {
               </span>
             </div>
           </div>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onMobileMenuToggle}
-            className="md:hidden p-2"
-          >
-            <Menu className="w-5 h-5" />
-          </Button>
         </div>
       </div>
     </header>

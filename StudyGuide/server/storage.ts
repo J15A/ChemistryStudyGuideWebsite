@@ -157,10 +157,13 @@ export class MemStorage implements IStorage {
               description:
                 "The arrangement of electrons in atomic orbitals follows the Aufbau principle, Hund's rule, and Pauli exclusion principle. Electrons fill orbitals in order of increasing energy.",
               examples: [
-                "1s² 2s² 2p⁶ 3s¹ for Sodium",
-                "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d¹⁰ 4p⁶ for Argon",
+                "1s² 2s² 2p⁶ 3s¹ for Sodium (Na)",
+                "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d¹⁰ 4p⁶ for Argon (Ar)",
+                "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d¹⁰ 4p⁶ 5s² 4d¹⁰ 5p⁶ for Xenon (Xe)",
+                "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d¹⁰ 4p⁶ 5s² 4d¹⁰ 5p⁶ 6s² 4f¹⁴ 5d¹⁰ 6p⁶ for Radon (Rn)",
               ],
-              formula: "Energy order: 1s < 2s < 2p < 3s < 3p < 4s < 3d < 4p...",
+              energyOrder:
+                "1s < 2s < 2p < 3s < 3p < 4s < 3d < 4p < 5s < 4d < 5p",
             },
             {
               title: "Atomic Orbitals",
@@ -185,20 +188,19 @@ export class MemStorage implements IStorage {
               ],
             },
             {
-              title: "Electromagnetic Spectrum",
+              title: "Ionization Energy",
               description:
-                "Energy is quantized and related to frequency and wavelength. Higher frequency means higher energy and shorter wavelength.",
-              formula: "E = hf = hc/λ",
-              explanation:
-                "where E = energy, h = Planck's constant, f = frequency, c = speed of light, λ = wavelength",
+                "Energy required to remove an electron from an atom or ion. First ionization energy is the energy needed to remove the first electron. Increases across periods and decreases down groups.",
             },
             {
-              title: "Atomic Emission Spectra",
+              title: "Electron Affinity",
               description:
-                "When electrons drop from higher to lower energy levels, they emit photons of specific wavelengths, creating characteristic line spectra.",
-              formula: "ΔE = hf = E_final - E_initial",
-              explanation:
-                "Energy difference determines the color/frequency of emitted light",
+                "Energy change when an electron is added to a neutral atom to form a negative ion. More negative values indicate greater tendency to gain electrons. Generally becomes more negative across periods.",
+            },
+            {
+              title: "Atomic Radius",
+              description:
+                "Distance from the nucleus to the outermost electron shell. Decreases across periods due to increasing nuclear charge and increases down groups due to additional electron shells.",
             },
           ],
         } as any,
@@ -231,13 +233,6 @@ export class MemStorage implements IStorage {
                 "Group 17: All gain 1 electron to form -1 ions",
                 "Group 18: Stable electron configurations",
               ],
-            },
-            {
-              title: "Effective Nuclear Charge",
-              description:
-                "The net positive charge experienced by valence electrons after accounting for electron shielding by inner electrons.",
-              formula: "Zeff = Z - S",
-              explanation: "where Z = atomic number, S = shielding constant",
             },
             {
               title: "Isoelectronic Series",
@@ -392,7 +387,7 @@ export class MemStorage implements IStorage {
                 "London dispersion (weakest, all molecules)",
                 "Dipole-dipole (polar molecules)",
                 "Hydrogen bonding (strongest, H with N/O/F)",
-                "Ion-dipole (ions with polar molecules)",
+                "Dipole-induced dipole (polar molecules with non-polar molecules)",
               ],
             },
             {
@@ -519,7 +514,7 @@ export class MemStorage implements IStorage {
                 "Minimum energy required for a reaction to occur. Catalysts lower activation energy by providing alternative reaction pathways.",
               formula: "k = Ae^(-Ea/RT)",
               explanation:
-                "Arrhenius equation relates rate constant to temperature and activation energy",
+                "Arrhenius equation relates rate constant to temperature and activation energy. Higher activation energy means slower reaction rate. Catalysts work by lowering the activation energy barrier.",
             },
             {
               title: "Reaction Mechanisms",
@@ -606,11 +601,16 @@ export class MemStorage implements IStorage {
           {
             id: 2,
             question:
-              "What is the wavelength of light with frequency 5.0 × 10¹⁴ Hz?",
-            options: ["600 nm", "500 nm", "400 nm"],
-            correctAnswer: 0,
+              "What is the electron configuration of a copper atom (Cu)?",
+            options: [
+              "[Ar] 4s² 3d⁹",
+              "[Ar] 4s¹ 3d¹⁰",
+              "[Ar] 4s² 3d⁸",
+              "[Ar] 4s¹ 3d⁹",
+            ],
+            correctAnswer: 1,
             explanation:
-              "λ = c/f = (3.0 × 10⁸)/(5.0 × 10¹⁴) = 6.0 × 10⁻⁷ m = 600 nm",
+              "Cu has 29 electrons. Like Cr, Cu has a special configuration: [Ar] 4s¹ 3d¹⁰ due to the stability of a filled d subshell.",
           },
           {
             id: 3,
@@ -631,11 +631,12 @@ export class MemStorage implements IStorage {
           },
           {
             id: 5,
-            question: "What happens when an electron moves from n=3 to n=2?",
-            options: ["Absorbs energy", "Emits energy", "No energy change"],
+            question:
+              "What is the maximum number of electrons that can occupy the 3p subshell?",
+            options: ["2", "6", "10", "14"],
             correctAnswer: 1,
             explanation:
-              "Moving to a lower energy level releases energy as electromagnetic radiation",
+              "The p subshell has 3 orbitals, and each orbital can hold 2 electrons. So 3p can hold 3 × 2 = 6 electrons.",
           },
         ],
       },
@@ -873,10 +874,12 @@ export class MemStorage implements IStorage {
           },
           {
             id: 4,
-            question: "What is the Arrhenius equation?",
-            options: ["k = Ae^(-Ea/RT)", "k = A + Ea/RT", "k = A × Ea/RT"],
-            correctAnswer: 0,
-            explanation: "Arrhenius equation: k = Ae^(-Ea/RT)",
+            question:
+              "What is the rate-determining step in a reaction mechanism?",
+            options: ["The fastest step", "The slowest step", "The first step"],
+            correctAnswer: 1,
+            explanation:
+              "The rate-determining step is the slowest step in a reaction mechanism and controls the overall reaction rate.",
           },
           {
             id: 5,
@@ -1047,11 +1050,11 @@ export class MemStorage implements IStorage {
           },
           {
             id: 10,
-            question:
-              "What is the wavelength of light with energy 3.0 × 10⁻¹⁹ J?",
-            options: ["500 nm", "663 nm", "400 nm"],
-            correctAnswer: 1,
-            explanation: "λ = hc/E = (6.626×10⁻³⁴×3×10⁸)/(3×10⁻¹⁹) = 663 nm",
+            question: "What is the molecular geometry of SF₆?",
+            options: ["Octahedral", "Trigonal bipyramidal", "Square planar"],
+            correctAnswer: 0,
+            explanation:
+              "SF₆ has 6 bonding pairs around the central S atom, giving octahedral geometry.",
           },
         ],
       },

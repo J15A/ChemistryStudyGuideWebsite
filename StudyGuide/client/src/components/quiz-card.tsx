@@ -95,9 +95,12 @@ export function QuizCard({ quiz }: QuizCardProps) {
       const topicId = parseInt(quiz.id) || 1;
       const timeSpentMinutes = Math.round(actualTimeSpent / 60); // Convert seconds to minutes
 
-      if (finalScore >= 80) {
-        // Mark topic as completed if score is 80% or higher
+      if (finalScore === 100) {
+        // Mark topic as completed only if score is 100%
         LocalStorageManager.updateProgress(topicId, 100, timeSpentMinutes);
+      } else if (finalScore >= 80) {
+        // Mark as in-progress if score is 80% or higher
+        LocalStorageManager.updateProgress(topicId, 80, timeSpentMinutes);
       } else if (finalScore >= 50) {
         // Mark as in-progress if score is 50% or higher
         LocalStorageManager.updateProgress(topicId, 60, timeSpentMinutes);
@@ -172,9 +175,6 @@ export function QuizCard({ quiz }: QuizCardProps) {
               className="bg-ib-primary hover:bg-ib-primary-dark text-white"
             >
               Retake Quiz
-            </Button>
-            <Button variant="outline" onClick={() => window.location.reload()}>
-              Back to Quizzes
             </Button>
           </div>
         </CardContent>

@@ -32,7 +32,7 @@ export function Sidebar() {
         {topics.map((topic, index) => {
           const isActive = location.includes(topic.slug);
           const progress = topicProgress[topic.id] || 0;
-          const isCompleted = progress >= 80;
+          const isCompleted = progress === 100;
 
           return (
             <div key={topic.id} className="mb-4">
@@ -50,9 +50,7 @@ export function Sidebar() {
                   <span>
                     {topic.order}. {topic.title}
                   </span>
-                  {isCompleted && (
-                    <span className="ml-auto text-green-600">✓</span>
-                  )}
+                  {isCompleted && null}
                 </div>
               </Link>
             </div>
